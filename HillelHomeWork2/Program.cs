@@ -26,7 +26,7 @@ namespace HillelHomeWork2
 
             Console.WriteLine("\nTask 2");
             List<string> badWords = new List<string> { "xd", "lol", "noob" };
-            string input = "I want to say xd, not xdg and not xdlol, i want to say noob,xd/lol";
+            string input = "I want to say xd, not xdg and not xdlol, i want to say noob,xd/lol and its all for task 2 and changes for xd git";
 
             string filtered = Task2(input, badWords);
             Console.WriteLine(filtered);
@@ -52,7 +52,7 @@ namespace HillelHomeWork2
             Console.WriteLine($"Decompressed string: {str5}");
 
             Console.WriteLine("\nTask 6");
-            string strcode = "MyPassword:123456";
+            string strcode = "ItsTask6AndMyPassIs:123321";
             byte[] key = new byte[16];
             byte[] iv = new byte[16];
             using (RandomNumberGenerator random = RandomNumberGenerator.Create())
