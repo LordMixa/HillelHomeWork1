@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -44,28 +45,43 @@ namespace HillelHomeWork2
             Console.WriteLine($"\nMissing int {Task4(ints)}");
 
             Console.WriteLine("\nTask 5");
-            string str3 = "AAACGGTTTT";
-            Console.WriteLine($"Input string: {str3}");
-            string str4 = Task5Compr(str3);
-            Console.WriteLine($"Compressed string: {str4}");
-            string str5 = Task5DeCompr(str4);
-            Console.WriteLine($"Decompressed string: {str5}");
+            string str3 = "AAACGGTTTTACCCGTAAAAAAAAAAGTTTTTTTTT";
+            //Console.WriteLine($"Input string: {str3}");
+            //string str4 = Task5Compr(str3);
+            //Console.WriteLine($"Compressed string: {str4}");
+            //string str5 = Task5DeCompr(str4);
+            //Console.WriteLine($"Decompressed string: {str5}");
+
+            Console.WriteLine($"Input string version 2: {str3}");
+            byte[] bytes = Task5ComprUpdate(str3);
+            Console.WriteLine($"Compressed string version 2: {BitConverter.ToString(bytes)}");
+            string str7 = Task5DeComprUpdate(bytes, str3.Length);
+            Console.WriteLine($"Decompressed string version 2: {str7}");
 
             Console.WriteLine("\nTask 6");
-            string strcode = "ItsTask6AndMyPassIs:123321";
-            byte[] key = new byte[16];
-            byte[] iv = new byte[16];
-            using (RandomNumberGenerator random = RandomNumberGenerator.Create())
-            {
-                random.GetBytes(key);
-                random.GetBytes(iv);
-            }
-            byte[] encryptedPass = Task6Crypt(strcode, key, iv);
-            string encryptedPassString = Convert.ToBase64String(encryptedPass);
-            string decryptedPassString = Task6Decrypt(encryptedPass, key, iv);
-            Console.WriteLine($"Original: {strcode}");
-            Console.WriteLine($"Encrypted: {encryptedPassString}");
-            Console.WriteLine($"Decrypted: {decryptedPassString}");
+            //string strcode = "ItsTask6AndMyPassIs:123321";
+            //byte[] key = new byte[16];
+            //byte[] iv = new byte[16];
+            //using (RandomNumberGenerator random = RandomNumberGenerator.Create())
+            //{
+            //    random.GetBytes(key);
+            //    random.GetBytes(iv);
+            //}
+            //byte[] encryptedPass = Task6Crypt(strcode, key, iv);
+            //string encryptedPassString = Convert.ToBase64String(encryptedPass);
+            //string decryptedPassString = Task6Decrypt(encryptedPass, key, iv);
+            //Console.WriteLine($"Original version 1: {strcode}");
+            //Console.WriteLine($"Encrypted version 1: {encryptedPassString}");
+            //Console.WriteLine($"Decrypted version 1: {decryptedPassString}");
+
+            string test = "i love job and hardworking 24 hours on day(false)";
+            string keyv2 = "asdfzxc123";
+            Console.WriteLine($"Original version 2: {test}");
+            Console.WriteLine($"Key version 2: {keyv2}");
+            string cryptone = Task6CryptOwn(test, keyv2);
+            Console.WriteLine($"Encrypted version 2: {cryptone}");
+            string decryptone = Task6DeCryptOwn(cryptone, keyv2);
+            Console.WriteLine($"Decrypted version 2: {decryptone}");
             Console.ReadLine();
         }
         public static void Task1<T>(T[] arr)
@@ -103,78 +119,167 @@ namespace HillelHomeWork2
 
             return expectedSum - actualSum;
         }
-        public static string Task5Compr(string dnk)
+        //public static string Task5Compr(string dnk)
+        //{
+        //    char[] arr = dnk.ToCharArray();
+        //    char current = arr[0];
+        //    int count = 1;
+        //    StringBuilder newstr = new StringBuilder();
+        //    for (int i = 1; i < arr.Length; i++)
+        //    {
+        //        if (current == arr[i])
+        //            count++;
+        //        else
+        //        {
+        //            newstr.Append(current + count.ToString());
+        //            current = arr[i];
+        //            count = 1;
+        //        }
+        //    }
+        //    newstr.Append(current + count.ToString());
+        //    return newstr.ToString();
+        //}
+        public static byte[] Task5ComprUpdate(string dnk)
         {
-            char[] arr = dnk.ToCharArray();
-            char current = arr[0];
-            int count = 1;
-            StringBuilder newstr = new StringBuilder();
-            for (int i = 1; i < arr.Length; i++)
-            {
-                if (current == arr[i])
-                    count++;
-                else
-                {
-                    newstr.Append(current + count.ToString());
-                    current = arr[i];
-                    count = 1;
-                }
-            }
-            newstr.Append(current + count.ToString());
-            return newstr.ToString();
-        }
-        public static string Task5DeCompr(string dnk)
-        {
-            char[] arr = dnk.ToCharArray();
-            StringBuilder newstr = new StringBuilder();
-            for (int i = 0, j = 1; i < arr.Length; i++, i++, j++, j++)
-            {
-                for (int l = 0; l < int.Parse(arr[j].ToString()); l++)
-                {
-                    newstr.Append(arr[i]);
-                }
-            }
-            return newstr.ToString();
-        }
-        static byte[] Task6Crypt(string plainText, byte[] key, byte[] iv)
-        {
-            byte[] encrypted;
-            using (Aes aesAlg = Aes.Create())
-            {
-                ICryptoTransform encryptor = aesAlg.CreateEncryptor(key, iv);
-                using (MemoryStream msEncrypt = new MemoryStream())
-                {
-                    using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
-                    {
-                        using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
-                        {
-                            swEncrypt.Write(plainText);
-                        }
-                        encrypted = msEncrypt.ToArray();
-                    }
-                }
-            }
-            return encrypted;
-        }
+            int byteCount = (dnk.Length + 3) / 4;
+            byte[] bytes = new byte[byteCount];
 
-        static string Task6Decrypt(byte[] cipherText, byte[] key, byte[] iv)
-        {
-            string plaintext;
-            using (Aes aesAlg = Aes.Create())
+            for (int i = 0; i < dnk.Length; i++)
             {
-                ICryptoTransform decryptor = aesAlg.CreateDecryptor(key, iv);
-                using (MemoryStream msDecrypt = new MemoryStream(cipherText))
+                int byteIndex = i / 4;
+                int bitShift = (3 - (i % 4)) * 2;
+
+                switch (dnk[i])
                 {
-                    using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
-                    {
-                        using (StreamReader srDecrypt = new StreamReader(csDecrypt))
-                        {
-                            plaintext = srDecrypt.ReadToEnd();
-                        }
-                    }
+                    case 'A':
+                        break;
+                    case 'C':
+                        bytes[byteIndex] |= (byte)(0b01 << bitShift);
+                        break;
+                    case 'G':
+                        bytes[byteIndex] |= (byte)(0b10 << bitShift);
+                        break;
+                    case 'T':
+                        bytes[byteIndex] |= (byte)(0b11 << bitShift);
+                        break;
                 }
             }
-            return plaintext;
+
+            return bytes;
+        }
+        public static string Task5DeComprUpdate(byte[] bytes, int length)
+        {
+            StringBuilder dna = new StringBuilder(length);
+            for (int i = 0; i < length; i++)
+            {
+                int byteIndex = i / 4;
+                int bitShift = (3 - (i % 4)) * 2;
+                byte mask = (byte)(0b11 << bitShift);
+                byte nucleotideBits = (byte)((bytes[byteIndex] & mask) >> bitShift);
+                switch (nucleotideBits)
+                {
+                    case 0b00:
+                        dna.Append('A');
+                        break;
+                    case 0b01:
+                        dna.Append('C');
+                        break;
+                    case 0b10:
+                        dna.Append('G');
+                        break;
+                    case 0b11:
+                        dna.Append('T');
+                        break;
+                }
+            }
+            return dna.ToString();
+        }
+        //public static string Task5DeCompr(string dnk)
+        //{
+        //    char[] arr = dnk.ToCharArray();
+        //    StringBuilder newstr = new StringBuilder();
+        //    for (int i = 0, j = 1; i < arr.Length; i++, i++, j++, j++)
+        //    {
+        //        for (int l = 0; l < int.Parse(arr[j].ToString()); l++)
+        //        {
+        //            newstr.Append(arr[i]);
+        //        }
+        //    }
+        //    return newstr.ToString();
+        //}
+        //static byte[] Task6Crypt(string plainText, byte[] key, byte[] iv)
+        //{
+        //    byte[] encrypted;
+        //    using (Aes aesAlg = Aes.Create())
+        //    {
+        //        ICryptoTransform encryptor = aesAlg.CreateEncryptor(key, iv);
+        //        using (MemoryStream msEncrypt = new MemoryStream())
+        //        {
+        //            using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+        //            {
+        //                using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
+        //                {
+        //                    swEncrypt.Write(plainText);
+        //                }
+        //                encrypted = msEncrypt.ToArray();
+        //            }
+        //        }
+        //    }
+        //    return encrypted;
+        //}
+
+        //static string Task6Decrypt(byte[] cipherText, byte[] key, byte[] iv)
+        //{
+        //    string plaintext;
+        //    using (Aes aesAlg = Aes.Create())
+        //    {
+        //        ICryptoTransform decryptor = aesAlg.CreateDecryptor(key, iv);
+        //        using (MemoryStream msDecrypt = new MemoryStream(cipherText))
+        //        {
+        //            using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+        //            {
+        //                using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+        //                {
+        //                    plaintext = srDecrypt.ReadToEnd();
+        //                }
+        //            }
+        //        }
+        //    }
+        //    return plaintext;
+        //}
+        static string Task6CryptOwn(string plainText, string key)
+        {
+            char[] chars = plainText.ToCharArray();
+            char[] keychar = key.ToCharArray();
+            int keyint = 0;
+            for (int i = 0; i < keychar.Length; i++)
+            {
+                keyint += keychar[i];
+            }
+            keyint = keyint / keychar.Length;
+            char[] newchars = new char[chars.Length];
+            for (int i = 0; i < chars.Length; i++)
+            {
+                newchars[i] = Convert.ToChar((chars[i] + keyint)%256);
+            }
+            return new string(newchars);
+        }
+        static string Task6DeCryptOwn(string plainText, string key)
+        {
+            char[] chars = plainText.ToCharArray();
+            char[] keychar = key.ToCharArray();
+            int keyint = 0;
+            for (int i = 0; i < keychar.Length; i++)
+            {
+                keyint += keychar[i];
+            }
+            keyint = keyint / keychar.Length;
+            char[] newchars = new char[chars.Length];
+            for (int i = 0; i < chars.Length; i++)
+            {
+                newchars[i] = Convert.ToChar((chars[i] - keyint+256) % 256);
+            }
+            return new string(newchars);
         }
     }
 }
